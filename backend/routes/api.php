@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RestaurantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,10 +25,27 @@ Route::get('/hello', function (){
 Route::post('/register', 'AuthController@register');
 Route::post('/login', 'AuthController@login');
 
-Route::middleware('auth:api')->group(function () {
+
+// Create a new restaurant
+Route::post('/restaurants', [RestaurantController::class, 'create']);
+
+// Get a list of all restaurants
+Route::get('/restaurants', [RestaurantController::class, 'index']);
+
+// Get details of a specific restaurant by ID
+Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
+
+// Update restaurant details by ID
+Route::put('/restaurants/{id}', [RestaurantController::class, 'update']);
+
+// Delete a restaurant by ID
+Route::delete('/restaurants/{id}', [RestaurantController::class, 'destroy']);
+
+
+/*Route::middleware('auth:api')->group(function () {
     Route::post('/restaurants', 'RestaurantController@store');
     Route::put('/restaurants/{id}', 'RestaurantController@update');
-});
+});*/
 
 
 Route::middleware('auth:api')->group(function () {

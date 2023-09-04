@@ -1,38 +1,95 @@
 <?php
+
 namespace App\Http\Controllers;
-use App\Restaurant;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Restaurant;
+use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
-    //
-    
-    public function store(Request $request)
+    // Create a new restaurant
+    public function create(Request $request)
     {
-        $user = Auth::user();
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:100|unique:restaurants',
+            'description' => 'nullable|string',
+            'address' => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'email' => 'required|string|email|unique:restaurants',
+            'owner_id' => 'required|exists:users,id', // Assumes "users" is the table name for the User model
+        ]);
 
-        // Check if the user is a restaurant owner
-        if ($user->user_type !== 'restaurant_owner') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $restaurant = Restaurant::create($validatedData);
 
-        // Validate and create a new restaurant
-        // ...
-
-        return response()->json(['message' => 'Restaurant created successfully', 'restaurant' => $restaurant], 201);
+        return response()->json(['message' => 'Restaurant created successfully', 'data' => $restaurant], 201);
     }
 
+    // Get a list of all restaurants
+    public function index()
+    {
+        $restaurants = Restaurant::all();
+
+        return response()->json(['data' => $restaurants]);
+    }
+
+    // Get details of a specific restaurant
+    public function show($id)
+    {
+        $restaurant = Restaurant::find($id);
+
+        if (!$restaurant) {
+            return response()->json(['message' => 'Restaurant not found'], 404);
+        }
+
+        return response()->json(['data' => $restaurant]);
+    }
+
+    // Update restaurant details
     public function update(Request $request, $id)
     {
-        $user = Auth::user();
+        $restaurant = Restaurant::find($id);
 
-        // Check if the user is a restaurant owner and owns the restaurant
-        // ...
+        if (!$restaurant) {
+            return response()->json(['message' => 'Restaurant not found'], 404);
+        }
 
-        // Validate and update the restaurant
-        // ...
+        $validatedData = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'description' => 'nullable|string',
+            'address' => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'owner_id' => 'required|exists:users,id', // Assumes "users" is the table name for the User model
+        ]);
 
-        return response()->json(['message' => 'Restaurant updated successfully', 'restaurant' => $restaurant]);
+        $restaurant->update($validatedData);
+
+        return response()->json(['message' => 'Restaurant updated successfully', 'data' => $restaurant]);
+    }
+
+    // Delete a restaurant
+    public function destroy($id)
+    {
+        $restaurant = Restaurant::find($id);
+
+        if (!$restaurant) {
+            return response()->json(['message' => 'Restaurant not found'], 404);
+        }
+
+        $restaurant->delete();
+
+        return response()->json(['message' => 'Restaurant deleted successfully']);
     }
 }
