@@ -25,6 +25,7 @@ const HomeScreen = () => {
       Axios.get('http://127.0.0.1:8000/api/restaurants')
       .then(response => {
         setFeaturedRestaurants(response.data);
+        console.log(response.data);
       })
       .catch(err => {
         console.error("Error fetching featured restaurants:", err);        
@@ -57,7 +58,7 @@ const HomeScreen = () => {
     <div>
       <h2>Welcome to Food Delivery App</h2>
 
-      {/* Featured Restaurants */}
+      {/* Featured Restaurants */ }
       <section>
         <h3>Featured Restaurants</h3>
         <div className="restaurant-list">

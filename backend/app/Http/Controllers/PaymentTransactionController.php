@@ -1,26 +1,78 @@
 <?php
+// app/Http/Controllers/PaymentTransactionController.php
 
 namespace App\Http\Controllers;
-use App\PaymentTransaction;
-use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Http\Request;
+use App\Models\PaymentTransaction;
 
 class PaymentTransactionController extends Controller
 {
-    //
-    public function store(Request $request)
+    // Create a new payment transaction
+    public function create(Request $request)
     {
-        // Validate and create a new payment transaction
-        // ...
+        $validatedData = $request->validate([
+            'order_id' => 'required|exists:orders,order_id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'nullable|string|max:50',
+        ]);
 
-        return response()->json(['message' => 'Payment transaction recorded successfully', 'transaction' => $transaction], 201);
+        $transaction = PaymentTransaction::create($validatedData);
+
+        return response()->json(['message' => 'Payment transaction created successfully', 'data' => $transaction], 201);
     }
 
+    // Get a list of all payment transactions
+    public function index()
+    {
+        $transactions = PaymentTransaction::all();
+
+        return response()->json(['data' => $transactions]);
+    }
+
+    // Get details of a specific payment transaction by ID
     public function show($id)
     {
-        // Retrieve and return a payment transaction by ID
-        // ...
+        $transaction = PaymentTransaction::find($id);
 
-        return response()->json(['transaction' => $transaction]);
+        if (!$transaction) {
+            return response()->json(['message' => 'Payment transaction not found'], 404);
+        }
+
+        return response()->json(['data' => $transaction]);
+    }
+
+    // Update payment transaction details by ID
+    public function update(Request $request, $id)
+    {
+        $transaction = PaymentTransaction::find($id);
+
+        if (!$transaction) {
+            return response()->json(['message' => 'Payment transaction not found'], 404);
+        }
+
+        $validatedData = $request->validate([
+            'order_id' => 'required|exists:orders,order_id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'nullable|string|max:50',
+        ]);
+
+        $transaction->update($validatedData);
+
+        return response()->json(['message' => 'Payment transaction updated successfully', 'data' => $transaction]);
+    }
+
+    // Delete a payment transaction by ID
+    public function destroy($id)
+    {
+        $transaction = PaymentTransaction::find($id);
+
+        if (!$transaction) {
+            return response()->json(['message' => 'Payment transaction not found'], 404);
+        }
+
+        $transaction->delete();
+
+        return response()->json(['message' => 'Payment transaction deleted successfully']);
     }
 }

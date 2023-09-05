@@ -1,4 +1,5 @@
 <?php
+// app/Models/PaymentTransaction.php
 
 namespace App\Models;
 
@@ -7,14 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class PaymentTransaction extends Model
 {
     protected $fillable = [
-        'user_id', 'order_id', 'amount', 'transaction_status', // Add other fields here
+        'order_id', 'payment_date', 'amount', 'payment_method',
     ];
-
-    // Define relationships
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function order()
     {
